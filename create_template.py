@@ -1,0 +1,168 @@
+content = """<!DOCTYPE html>
+<html>
+<head>
+    <title>PhishGuard - Phishing Detector</title>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #0a0e1a; color: #e0e0e0; }
+        .header { background: #111827; padding: 20px 40px; border-bottom: 2px solid #1e40af; }
+        .header h1 { color: #60a5fa; font-size: 24px; }
+        .header p { color: #9ca3af; font-size: 14px; margin-top: 4px; }
+        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        .search-box { background: #111827; border-radius: 12px; padding: 30px; margin-bottom: 30px; border: 1px solid #1f2937; }
+        .search-box h2 { color: #f3f4f6; margin-bottom: 20px; font-size: 18px; }
+        .input-group { display: flex; gap: 12px; }
+        .input-group input { flex: 1; padding: 14px 18px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: #f3f4f6; font-size: 15px; outline: none; }
+        .input-group input:focus { border-color: #3b82f6; }
+        .input-group button { padding: 14px 28px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        .input-group button:hover { background: #1d4ed8; }
+        .result { border-radius: 12px; padding: 25px; margin-bottom: 30px; border: 1px solid; }
+        .result.safe { background: #052e16; border-color: #166534; }
+        .result.phishing { background: #1c0a0a; border-color: #991b1b; }
+        .result h3 { font-size: 20px; margin-bottom: 12px; }
+        .result.safe h3 { color: #4ade80; }
+        .result.phishing h3 { color: #f87171; }
+        .confidence { font-size: 36px; font-weight: bold; margin: 10px 0; }
+        .result.safe .confidence { color: #4ade80; }
+        .result.phishing .confidence { color: #f87171; }
+        .features { background: #111827; border-radius: 12px; padding: 25px; margin-bottom: 30px; border: 1px solid #1f2937; }
+        .features h2 { color: #f3f4f6; margin-bottom: 20px; font-size: 18px; }
+        .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .feature-item { background: #1f2937; padding: 12px; border-radius: 8px; }
+        .feature-item .name { color: #9ca3af; font-size: 12px; margin-bottom: 4px; }
+        .feature-item .value { color: #f3f4f6; font-size: 18px; font-weight: bold; }
+        .history { background: #111827; border-radius: 12px; padding: 25px; border: 1px solid #1f2937; }
+        .history h2 { color: #f3f4f6; margin-bottom: 20px; font-size: 18px; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 8px; margin-bottom: 8px; background: #1f2937; }
+        .history-url { color: #9ca3af; font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 12px; }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .badge.safe { background: #166534; color: #4ade80; }
+        .badge.phishing { background: #991b1b; color: #f87171; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 30px; }
+        .stat-card { background: #111827; border-radius: 12px; padding: 20px; border: 1px solid #1f2937; text-align: center; }
+        .stat-card .number { font-size: 32px; font-weight: bold; color: #60a5fa; }
+        .stat-card .label { color: #9ca3af; font-size: 13px; margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>PhishGuard - Real-Time Phishing Detection</h1>
+        <p>Powered by Random Forest ML Model | Trained on 6,500+ Real URLs | 99.90% AUC-ROC</p>
+    </div>
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <div class="number" id="total-checked">0</div>
+                <div class="label">URLs Analyzed</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="phishing-found" style="color:#f87171">0</div>
+                <div class="label">Phishing Detected</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="safe-found" style="color:#4ade80">0</div>
+                <div class="label">Safe URLs</div>
+            </div>
+        </div>
+        <div class="search-box">
+            <h2>Analyze a URL</h2>
+            <div class="input-group">
+                <input type="text" id="url-input" placeholder="Enter any URL e.g. http://paypal-verify-account.tk/login" />
+                <button onclick="checkUrl()">Analyze</button>
+            </div>
+        </div>
+        <div id="result-box" style="display:none"></div>
+        <div id="features-box" style="display:none"></div>
+        <div class="history">
+            <h2>Recent Analyses</h2>
+            <div id="history-list"><p style="color:#6b7280">No URLs analyzed yet.</p></div>
+        </div>
+    </div>
+    <script>
+        let history = [];
+        let stats = {total: 0, phishing: 0, safe: 0};
+
+        async function checkUrl() {
+            const url = document.getElementById('url-input').value.trim();
+            if (!url) return alert('Please enter a URL');
+            const btn = document.querySelector('button');
+            btn.textContent = 'Analyzing...';
+            btn.disabled = true;
+            try {
+                const res = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: url})
+                });
+                const data = await res.json();
+                displayResult(url, data);
+                updateHistory(url, data);
+                updateStats(data);
+            } catch(e) {
+                alert('Error: ' + e.message);
+            }
+            btn.textContent = 'Analyze';
+            btn.disabled = false;
+        }
+
+        function displayResult(url, data) {
+            const isPhishing = data.prediction === 1;
+            const confidence = (data.confidence * 100).toFixed(1);
+            const box = document.getElementById('result-box');
+            box.style.display = 'block';
+            box.className = 'result ' + (isPhishing ? 'phishing' : 'safe');
+            box.innerHTML =
+                '<h3>' + (isPhishing ? 'PHISHING DETECTED' : 'SAFE URL') + '</h3>' +
+                '<div class="confidence">' + confidence + '% confidence</div>' +
+                '<p style="color:#9ca3af;margin-top:8px">URL: ' + url + '</p>';
+
+            const fbox = document.getElementById('features-box');
+            fbox.style.display = 'block';
+            let featureHTML = '<div class="features"><h2>Feature Analysis</h2><div class="feature-grid">';
+            const entries = Object.entries(data.features).slice(0, 12);
+            for (let i = 0; i < entries.length; i++) {
+                const k = entries[i][0];
+                const v = entries[i][1];
+                featureHTML += '<div class="feature-item"><div class="name">' +
+                    k.replace(/_/g, ' ') + '</div><div class="value">' +
+                    (typeof v === 'number' ? v.toFixed(2) : v) + '</div></div>';
+            }
+            featureHTML += '</div></div>';
+            fbox.innerHTML = featureHTML;
+        }
+
+        function updateHistory(url, data) {
+            const isPhishing = data.prediction === 1;
+            history.unshift({url, isPhishing});
+            if (history.length > 10) history.pop();
+            const list = document.getElementById('history-list');
+            let html = '';
+            for (let i = 0; i < history.length; i++) {
+                html += '<div class="history-item">' +
+                    '<div class="history-url">' + history[i].url + '</div>' +
+                    '<span class="badge ' + (history[i].isPhishing ? 'phishing' : 'safe') + '">' +
+                    (history[i].isPhishing ? 'PHISHING' : 'SAFE') + '</span></div>';
+            }
+            list.innerHTML = html;
+        }
+
+        function updateStats(data) {
+            stats.total++;
+            if (data.prediction === 1) stats.phishing++;
+            else stats.safe++;
+            document.getElementById('total-checked').textContent = stats.total;
+            document.getElementById('phishing-found').textContent = stats.phishing;
+            document.getElementById('safe-found').textContent = stats.safe;
+        }
+
+        document.getElementById('url-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkUrl();
+        });
+    </script>
+</body>
+</html>"""
+
+with open('templates/index.html', 'w') as f:
+    f.write(content)
+print('Template created successfully!')

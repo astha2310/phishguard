@@ -1,0 +1,5 @@
+*.pkl
+__pycache__/
+*.pyc
+data/phishing_raw.csv
+data/backup_phishing.csv
