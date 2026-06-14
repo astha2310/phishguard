@@ -1,58 +1,91 @@
-# PhishGuard - Real-Time Phishing Detection System
+# PhishGuard — ML Phishing URL Detection
 
-A machine learning system that detects phishing URLs in real time using a Random Forest classifier trained on 6,500+ real-world URLs from PhishTank and legitimate sources.
+Built by Astha Patel | M.S. Information Technology, Arizona State University
 
-## Results
-- **Random Forest AUC-ROC: 99.90%**
-- **XGBoost AUC-ROC: 99.82%**
-- **Logistic Regression AUC-ROC: 98.85%**
-- Trained on 3,250 real phishing URLs from PhishTank + 3,250 legitimate URLs
-- 24 behavioral and structural URL features engineered from scratch
+---
 
-## Features Extracted
-- URL length, domain length, path length
-- Number of hyphens, dots, underscores, digits
-- Presence of IP address instead of domain
-- HTTPS vs HTTP
-- Suspicious keyword count (login, verify, secure, paypal, etc.)
-- URL entropy (randomness score)
-- Suspicious TLD detection (.tk, .ml, .xyz, etc.)
-- Number of subdomains
+## Why I Built This
+
+Phishing is the entry point for most major breaches. The 2024 Verizon DBIR puts it at over 36% of all incidents. But most phishing detection tools are either black-box commercial products or academic demos that never touch real data.
+
+I wanted to build a classifier from scratch using real phishing URLs, real feature engineering, and a model I could actually explain. No API wrappers. No pre-trained models. Just raw data and honest evaluation.
+
+---
+
+## What It Does
+
+PhishGuard takes a URL as input and classifies it as phishing or legitimate. It extracts 24 behavioral and structural features from the URL itself, then runs them through a trained machine learning model. A Flask web interface lets you paste any URL and get a real-time prediction with a confidence score.
+
+---
+
+## The Data
+
+6,500 plus real URLs sourced from PhishTank for verified phishing and public datasets for legitimate URLs. No synthetic data. Every URL in the training set is real.
+
+---
+
+## Feature Engineering
+
+This is where I spent the most time. The model does not just look at the URL string. It extracts 24 features covering URL length and structure, suspicious character patterns, domain age signals, HTTPS presence, lexical similarity to known legitimate domains for typosquatting detection, presence of IP addresses instead of domain names, and redirect chain indicators.
+
+The hypothesis: phishing URLs behave differently from legitimate ones at a structural level, even before you visit them.
+
+---
+
+## Model Performance
+
+| Model | AUC-ROC |
+|---|---|
+| Random Forest | 99.90% |
+| XGBoost | 99.82% |
+| Logistic Regression | 98.85% |
+
+Random Forest won. 99.90% AUC-ROC means the model almost perfectly separates phishing from legitimate URLs across all classification thresholds.
+
+---
 
 ## Tech Stack
-- Python, scikit-learn, XGBoost, pandas, NumPy
-- Flask (live web dashboard)
-- PhishTank API (real threat intelligence data)
 
-## How to Run
+Python 3, scikit-learn, XGBoost, pandas, NumPy, Flask, matplotlib, seaborn
 
-### 1. Install dependencies
-### 2. Download data
-### 3. Build dataset
-### 4. Train models
-### 5. Launch dashboard
-Open browser at `http://localhost:5000`
+---
 
-## Dashboard Features
-- Submit any URL for instant phishing prediction
-- Confidence score display
-- Feature analysis breakdown
-- Live counter of URLs analyzed, phishing detected, safe URLs
-- Recent analysis history
+## How to Run It
 
-## Sample Detections
-| URL | Result | Confidence |
-|-----|--------|-----------|
-| http://paypal-verify-account.tk/login | PHISHING | 99% |
-| http://192.168.1.1/secure/banking/login.php | PHISHING | 100% |
-| http://amazon-account-suspended.xyz/verify | PHISHING | 100% |
-| https://www.google.com | SAFE | 60% |
+```bash
+git clone https://github.com/astha2310/phishguard.git
+cd phishguard
 
-## Known Limitations
-- Model trained primarily on URL structure features, not content
-- Some legitimate URLs with complex paths may trigger false positives
-- Model should be retrained periodically as phishing patterns evolve
+pip3 install scikit-learn xgboost flask pandas numpy matplotlib seaborn
 
-## Author
-Astha Patel | M.S. Information Technology, Arizona State University
-GitHub: github.com/astha2310
+python3 train.py
+python3 app.py
+```
+
+Then open http://127.0.0.1:5000 in your browser.
+
+---
+
+## What I Learned
+
+The biggest lesson was about class imbalance. Getting to a genuinely useful model required careful attention to precision and recall, not just accuracy. A model that predicts "legitimate" for everything would be 95 percent accurate and completely useless.
+
+I also learned that feature engineering matters more than model choice. The gap between good features and bad ones was larger than the gap between Logistic Regression and Random Forest.
+
+The most interesting finding: URL length alone is surprisingly predictive. Phishing URLs are significantly longer on average than legitimate ones, probably because attackers are hiding the real destination domain deep in the path.
+
+---
+
+## What Could Be Added Next
+
+Real-time URL scanning in a browser extension, live threat feed integration to flag newly registered phishing domains, expanded features including WHOIS and DNS records, and an API endpoint for integration with other security tools.
+
+---
+
+## Disclaimer
+
+Built for educational purposes and security research. All phishing URLs are from PhishTank's public verified feed.
+
+---
+
+Astha Patel | github.com/astha2310 | linkedin.com/in/asthap23
