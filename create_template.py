@@ -48,7 +48,7 @@ content = """<!DOCTYPE html>
 <body>
     <div class="header">
         <h1>PhishGuard - Real-Time Phishing Detection</h1>
-        <p>Powered by Random Forest ML Model | Trained on 6,500+ Real URLs | 99.90% AUC-ROC</p>
+        <p>Powered by Random Forest ML Model | 6,500-URL dataset | 99.89% test-set AUC-ROC</p>
     </div>
     <div class="container">
         <div class="stats">

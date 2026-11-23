@@ -13,7 +13,7 @@ app = Flask(__name__)
 print("Loading model...")
 model = joblib.load('models/best_model.pkl')
 feature_cols = joblib.load('models/feature_cols.pkl')
-print("Model loaded! Random Forest - 99.90% AUC-ROC")
+print("Model loaded! Random Forest - 99.89% test-set AUC-ROC")
 
 @app.route('/')
 def index():
@@ -56,8 +56,8 @@ def predict():
 def stats():
     return jsonify({
         'model': 'Random Forest',
-        'auc_roc': 0.9990,
-        'training_samples': 6500,
+        'auc_roc': 0.9989,
+        'training_samples': 5200,
         'features': len(feature_cols),
         'status': 'running'
     })
