@@ -108,9 +108,9 @@ python3 predict.py --real-world                    # the real-world check above
 python3 app.py                                     # web interface
 ```
 
-Then open http://127.0.0.1:5000 in your browser.
+Then open `http://127.0.0.1:5001` in your browser (it only works while app.py is running on your computer).
 
-**Mac note:** if port 5000 is busy, it's usually AirPlay Receiver. Turn it off in System Settings → General → AirDrop & Handoff, or use `predict.py` instead.
+**Mac note:** the app uses port 5001, because macOS reserves port 5000 for AirPlay Receiver.
 
 To rebuild the dataset from scratch: `python3 download_data.py` then `python3 build_dataset.py`.
 
