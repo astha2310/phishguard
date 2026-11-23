@@ -69,7 +69,7 @@ For a phishing-awareness experiment I ran in November 2026, I tested PhishGuard 
 | `https://www.fedex.com/en-us/tracking.html` | Legitimate | **Phishing (98.5%)** |
 | `https://github.com/astha2310/phishguard` | Legitimate | **Phishing (100%)** |
 | `https://docs.python.org/3/library/urllib.parse.html` | Legitimate | **Phishing (100%)** |
-| `http://brightline-it-helpdesk.example/verify` | Phishing-style | Phishing (99.0%) |
+| `http://brightline-it-helpdesk.example/verify` | Phishing-style | Phishing (98.5%) |
 | `http://parcelgo-redelivery.example` | Phishing-style | Phishing (98.3%) |
 
 It caught every phishing link, but it also called most real websites phishing, very confidently.
